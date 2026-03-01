@@ -39,3 +39,23 @@
 
 # debug information files
 *.dwo
+
+# VS Code
+.vscode/
+
+# Windows system files
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS system files (good habit even on Windows if collaborating)
+.DS_Store
+
+# Compiled binary (your sentinel.exe)
+sentinel.exe
+sentinel
+
+# Build directories (common in larger C++ projects)
+build/
+bin/
+out/
