@@ -3,6 +3,7 @@
 #include <sstream>  // parses each line into pieces
 #include <string>
 #include <vector>
+#include <map>      // multi-track state management
 #include <cmath>    // sin, cos, sqrt, asin - needed for the Haversine formula
 #include <iomanip>  // std::fixed + std::setprecision needed for clean decimal formatting
 
@@ -136,6 +137,31 @@ std::vector<SensorPing> parseSensorFile(const std::string& filename) {
 }
 
 /****************************
+// PRINT COP SUMMARY 
+    Loops through all tracks and printa a final
+    mission report - the Common Operating Picture
+****************************/
+void printCOP(const std::map<std::string, TrackState>& tracks) {
+    std::cout << "\n===========================================" << std::endl;
+    std::cout << "         COMMON OPERATING PICTURE            " << std::endl;
+    std::cout << "=============================================" << std::endl;
+
+    for (const auto& entry : tracks) {
+        const TrackState& track = entry.second;
+
+        std::cout << "\n TRACK ID: " << track.trackId << std::endl;
+        std::cout <<   " STATUS: ACTIVE" << std::endl;
+        std::cout <<   " PINGS: " << track.pingCount << std::endl;
+        std::cout << std::fixed << std::setprecision(4);
+        std::cout <<   " LAST LAT: " << track.lastPing.latitude << std::endl;
+        std::cout <<   " LAST LON: " << track.lastPing.longitude << std::endl;
+        std::cout <<   " LAST SEEN: " << track.lastPing.timestamp << std::endl;
+        std::cout <<   " TOTAL DISTANCE: " << track.totalDistanceKm << " km" << std::endl;
+        std::cout << "=============================================" << std::endl;
+    }
+}
+
+/****************************
 MAIN 
 ****************************/
 int main(int argc, char *argv[])
@@ -146,17 +172,24 @@ int main(int argc, char *argv[])
     // Parse the sensor feed from a file
     std::vector<SensorPing> pings = parseSensorFile("sensors.txt");
 
+    // Map of trackID -> TrackState
+    // Each asset gets its own TrackState, looked up by ID
+    std::map<std::string, TrackState> tracks;
+
     // Print each ping to confirm parsing workload
     std::cout << "\n[SENSOR FEED - RAW PINGS RECEIVED]" << std::endl;
     std::cout << "----------------------------------" << std::endl;
 
     // TrackState to maintain running distance
-    TrackState track;
+    //TrackState track;
 
     // C++ range-based for loop
     //Equivalent to Python's for loop (for ping in pings)
     // '&' = reading each ping by reference instead of making a copy which is more efficient
     for (const SensorPing& ping : pings) {
+
+        // Look up or create a TrackState for this ping's track ID
+        TrackState& track = tracks[ping.trackId];
 
         // Calculate distance between this ping and the last one
         double distanceKm = 0.0;
@@ -193,11 +226,12 @@ int main(int argc, char *argv[])
         std::cout << std::endl;
     }
 
-    // Summary
+    // Final Summary Section ======================================
     std::cout << "----------------------------------" << std::endl;
-    std::cout << "Total pings ingested: " << track.pingCount << std::endl;
-    std::cout << "Total distance: " << track.totalDistanceKm << " km" << std::endl;
-    std::cout << "==================================" << std::endl;
+    std::cout << "Total pings ingested: " << pings.size() << std::endl;
+    
+    // Print the COP summry
+    printCOP(tracks);
 
     return 0;
 }
