@@ -1,0 +1,14 @@
+# This file prevents copying of unnecesary files into container,
+# makes builds faster, + avoids conflicts (esp precompiled binaries)
+
+# Ignore compiled binaries
+*.exe
+sentinel
+main.exe
+
+# Ignore git + editor stuff
+.git
+.vscode
+
+# Ignore OS stuff
+.DS_Store
